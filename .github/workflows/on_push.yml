@@ -6,32 +6,32 @@ jobs:
   npm:
     runs-on: ubuntu-latest
     steps:
-      - uses: kyo-ago/node-setup-actions
+      - uses: kyo-ago/node-setup-actions@v1
 
   yarn:
     runs-on: ubuntu-latest
     steps:
-      - uses: kyo-ago/node-setup-actions
+      - uses: kyo-ago/node-setup-actions@v1
         with:
           package-manager: yarn
 
   cache-key:
     runs-on: ubuntu-latest
     steps:
-      - uses: kyo-ago/node-setup-actions
+      - uses: kyo-ago/node-setup-actions@v1
         with:
           node-modules-cache-key: test
 
   working-directory:
     runs-on: ubuntu-latest
     steps:
-      - uses: kyo-ago/node-setup-actions
+      - uses: kyo-ago/node-setup-actions@v1
         with:
           working-directory: working-directory
 
   disable-build-cache:
     runs-on: ubuntu-latest
     steps:
-      - uses: kyo-ago/node-setup-actions
+      - uses: kyo-ago/node-setup-actions@v1
         with:
           build-cache: ''
