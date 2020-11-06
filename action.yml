@@ -1,0 +1,75 @@
+name: 'node-setup-actions'
+description: 'setup and cache dependencies'
+author: 'kyo-ago'
+
+inputs:
+  node-version:
+    description: 'setup node version(default 12)'
+    default: '12'
+  working-directory:
+    description: 'working-directory for package.json'
+    default: ''
+  node-modules:
+    description: 'node_modules paths.'
+    default: 'node_modules'
+  node-modules-cache-key:
+    description: 'Additional node_modules cache key'
+    default: ''
+  package-manager:
+    description: 'npm or yarn'
+    default: 'npm'
+  build-cache:
+    description: 'build cache paths. If not used, set to ""'
+    default: 'node_modules/.cache'
+  build-cache-key:
+    description: 'Additional build cache key'
+    default: ''
+
+outputs:
+  node-modules-cache-hit:
+    description: "A boolean value to indicate an exact match was found for the node-modules-cache-key"
+    value: ${{ steps.node-modules-cache-hit.outputs.cache-hit }}
+  build-cache-hit:
+    description: "A boolean value to indicate an exact match was found for the build-cache-key"
+    value: ${{ steps.build-cache-hit.outputs.cache-hit }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Use Node.js ${{ inputs.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ inputs.node-version }}
+    - id: package-manager
+      run: |
+        if [ "${{ inputs.package-manager }}" = "npm" ]; then
+          echo "::set-output name=hash::${{ hashFiles(format('{1}{2}', inputs.working-directory, '/package-lock.json')) }}"
+          echo "::set-output name=install::npm ci"
+        else
+          echo "::set-output name=hash::${{ hashFiles(format('{1}{2}', inputs.working-directory, '/yarn.lock')) }}"
+          echo "::set-output name=install::yarn install --frozen-lockfile"
+        fi
+      shell: bash
+    - name: Cache node_modules
+      uses: actions/cache@v2
+      id: node-modules-cache-hit
+      with:
+        path: ${{ inputs.node-modules }}
+        key: ${{ runner.os }}-node_modules-node${{ inputs.node-version }}-${{ inputs.node-modules-cache-key }}-${{ steps.package-manager.outputs.hash }}
+    - run: echo steps.node-modules-cache-hit.outputs.cache-hit=${{ steps.node-modules-cache-hit.outputs.cache-hit }}
+      shell: bash
+    - name: Install dependencies
+      if: steps.node-modules-cache-hit.outputs.cache-hit != 'true'
+      run: ${{ steps.package-manager.outputs.install }}
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
+    - name: Cache build cache
+      uses: actions/cache@v2
+      id: build-cache-hit
+      if: ${{ inputs.build-cache }}
+      with:
+        path: ${{ inputs.build-cache }}
+        key: ${{ runner.os }}-build_cache-node${{ inputs.node-version }}-${{ inputs.build-cache-key }}-${{ github.sha }}
+        restore-keys: ${{ runner.os }}-build_cache-node${{ inputs.node-version }}-${{ inputs.build-cache-key }}-
+    - run: echo steps.build-cache-hit.outputs.cache-hit=${{ steps.build-cache-hit.outputs.cache-hit }}
+      shell: bash

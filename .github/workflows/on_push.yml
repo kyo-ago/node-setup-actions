@@ -1,0 +1,37 @@
+name: test
+
+on: [push]
+
+jobs:
+  npm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: kyo-ago/node-setup-actions
+
+  yarn:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: kyo-ago/node-setup-actions
+        with:
+          package-manager: yarn
+
+  cache-key:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: kyo-ago/node-setup-actions
+        with:
+          node-modules-cache-key: test
+
+  working-directory:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: kyo-ago/node-setup-actions
+        with:
+          working-directory: working-directory
+
+  disable-build-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: kyo-ago/node-setup-actions
+        with:
+          build-cache: ''
